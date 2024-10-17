@@ -1,7 +1,6 @@
 package com.seu_projeto.venda;
 
 import com.seu_projeto.venda.dao.IVendaDAO;
-
 import java.util.Optional;
 
 public class VendaService {
@@ -19,7 +18,13 @@ public class VendaService {
         return venda;
     }
 
+    // Alteração para retornar Optional
     public Optional<Venda> buscarVenda(String numeroNotaFiscal) {
+        if (numeroNotaFiscal == null || numeroNotaFiscal.isEmpty()) {
+            throw new IllegalArgumentException("O número da nota fiscal não pode ser nulo ou vazio.");
+        }
+
+        // Usando Optional para buscar a venda
         return vendaDAO.buscarPorNumero(numeroNotaFiscal);
     }
 }

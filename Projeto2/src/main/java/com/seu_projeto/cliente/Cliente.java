@@ -3,6 +3,7 @@ package com.seu_projeto.cliente;
 import java.util.Objects;
 
 public class Cliente {
+    private int id; // Adicionando o atributo id
     private String nome;
     private String cpf;
     private String cidade;
@@ -10,7 +11,8 @@ public class Cliente {
     private String estado;
 
     // Construtor completo
-    public Cliente(String nome, String cpf, String cidade, String endereco, String estado) {
+    public Cliente(Integer id, String nome, String cpf, String cidade, String endereco, String estado) {
+        this.id = id; // Inicializando o id
         this.nome = nome;
         this.cpf = cpf;
         this.cidade = cidade;
@@ -20,6 +22,18 @@ public class Cliente {
 
     // Construtor vazio
     public Cliente() {}
+
+    // Getter para id
+    public int getId() {
+        return id;
+    }
+
+    // Setter para id
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    // Restante dos getters e setters...
 
     public String getNome() {
         return nome;
@@ -64,7 +78,8 @@ public class Cliente {
     @Override
     public String toString() {
         return "Cliente{" +
-                "nome='" + nome + '\'' +
+                "id=" + id + // Adicionando id no toString
+                ", nome='" + nome + '\'' +
                 ", cpf='" + cpf + '\'' +
                 ", cidade='" + cidade + '\'' +
                 ", endereco='" + endereco + '\'' +

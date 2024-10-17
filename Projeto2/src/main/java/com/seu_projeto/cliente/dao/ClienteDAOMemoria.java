@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ClienteDAOMemoria implements IClienteDAO {
+
     private Map<String, Cliente> clienteMap = new HashMap<>();
 
     @Override

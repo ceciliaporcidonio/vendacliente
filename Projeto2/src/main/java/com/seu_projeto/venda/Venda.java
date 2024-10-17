@@ -3,6 +3,7 @@ package com.seu_projeto.venda;
 import com.seu_projeto.cliente.Cliente;
 import com.seu_projeto.produto.Produto;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Venda {
@@ -10,10 +11,10 @@ public class Venda {
     private Cliente cliente;
     private Map<Produto, Integer> produtos;
 
-    public Venda(String numeroNotaFiscal, Cliente cliente, Map<Produto, Integer> produtos) {
+    public Venda(String numeroNotaFiscal, Cliente cliente) {
         this.numeroNotaFiscal = numeroNotaFiscal;
         this.cliente = cliente;
-        this.produtos = produtos;
+        this.produtos = new HashMap<>(); // Inicializar produtos
     }
 
     public String getNumeroNotaFiscal() {
@@ -26,6 +27,11 @@ public class Venda {
 
     public Map<Produto, Integer> getProdutos() {
         return produtos;
+    }
+
+    public void adicionarProduto(Produto produto, int quantidade) {
+        // Se o produto já existir, incrementa a quantidade
+        produtos.merge(produto, quantidade, Integer::sum);
     }
 
     public double calcularTotal() {
@@ -41,7 +47,10 @@ public class Venda {
         sb.append("Cliente: ").append(cliente.getNome()).append("\n");
         sb.append("Produtos:\n");
         produtos.forEach((produto, quantidade) ->
-                sb.append(produto.getDescricao()).append(" - Quantidade: ").append(quantidade).append(" - Total: ").append(produto.getValorUnitario() * quantidade).append("\n"));
+                sb.append(produto.getDescricao()).append(" - Quantidade: ")
+                        .append(quantidade).append(" - Total: ")
+                        .append(produto.getValorUnitario() * quantidade).append("\n")
+        );
         sb.append("Total da Venda: ").append(calcularTotal()).append("\n");
         return sb.toString();
     }

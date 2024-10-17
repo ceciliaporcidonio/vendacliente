@@ -20,8 +20,8 @@ class VendaDAOTest {
     @BeforeEach
     void setUp() {
         vendaDAO = new VendaDAOMemoria(); // Instancia a VendaDAOMemoria diretamente
-        cliente = new Cliente("Ana", "12345678900", "Rua A", "São Paulo", "SP");
-        produto = new Produto("Notebook", 3500.00, "PROD001"); // Configurações reutilizadas
+        cliente = new Cliente(7,"Ana", "12345678900", "Rua A", "São Paulo", "SP");
+        produto = new Produto(6,"Notebook", 3500.00, "PROD001"); // Configurações reutilizadas
     }
 
     @Test
@@ -31,7 +31,7 @@ class VendaDAOTest {
         produtosVendidos.put(produto, 2); // Adicionando produto e quantidade
 
         // Criando uma venda
-        Venda venda = new Venda("NF123456", cliente, produtosVendidos); // Passando o mapa
+        Venda venda = new Venda("NF123456", cliente); // Passando o mapa
 
         // Registrando a venda
         vendaDAO.registrar(venda);
@@ -48,7 +48,7 @@ class VendaDAOTest {
         produtosVendidos.put(produto, 2); // Adicionando produto e quantidade
 
         // Criando e registrando uma venda
-        Venda venda = new Venda("NF123456", cliente, produtosVendidos);
+        Venda venda = new Venda("NF123456", cliente);
         vendaDAO.registrar(venda);
 
         // Excluindo a venda

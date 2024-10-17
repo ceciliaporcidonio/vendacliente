@@ -1,4 +1,4 @@
-package com.seu_projeto.cliente.dao; // Ajuste conforme necessário
+package com.seu_projeto.cliente.dao;
 
 import com.seu_projeto.cliente.Cliente;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,11 +14,11 @@ class ClienteDAOMemoriaTest {
 
     @BeforeEach
     void setUp() {
-        clienteDAO = new ClienteDAOMemoria();
+        clienteDAO = new ClienteDAOMemoria(); // Instância concreta da DAO
     }
 
     private Cliente criarClientePadrao() {
-        return new Cliente("Ana", "12345678900", "São Paulo", "Rua A", "SP"); // Ajustado para ordem correta
+        return new Cliente(1, "Ana", "12345678900", "São Paulo", "Rua A", "SP"); // Ajustado para ordem correta
     }
 
     @Test
@@ -47,7 +47,7 @@ class ClienteDAOMemoriaTest {
         clienteDAO.cadastrar(cliente);
 
         // Usando o mesmo CPF do cliente existente
-        Cliente novoCliente = new Cliente("Ana Maria", "12345678900", "Rio de Janeiro", "Rua B", "RJ");
+        Cliente novoCliente = new Cliente(1,"Ana Maria", "12345678900", "Rio de Janeiro", "Rua B", "RJ");
         clienteDAO.alterar(novoCliente);
 
         Cliente encontrado = clienteDAO.consultar("12345678900");
@@ -56,20 +56,20 @@ class ClienteDAOMemoriaTest {
     }
 
     @Test
-    public void testExcluirCliente() {
-        ClienteDAOMemoria dao = new ClienteDAOMemoria();
-        Cliente cliente = new Cliente("Ana", "12345678900", "São Paulo", "Rua A", "SP");
-        dao.cadastrar(cliente); // Certifique-se de adicionar o cliente antes de tentar excluí-lo
+    void testExcluirCliente() {
+        Cliente cliente = criarClientePadrao();
+        clienteDAO.cadastrar(cliente); // Certifique-se de adicionar o cliente antes de tentar excluí-lo
 
-        dao.excluir("12345678900"); // Tente excluir o cliente
+        clienteDAO.excluir("12345678900"); // Tente excluir o cliente
+
         // Aqui, você pode verificar se o cliente foi realmente excluído
-        assertThrows(RuntimeException.class, () -> dao.consultar("12345678900"));
+        assertThrows(RuntimeException.class, () -> clienteDAO.consultar("12345678900"));
     }
 
     @Test
     void testListarTodos() {
         Cliente cliente1 = criarClientePadrao();
-        Cliente cliente2 = new Cliente("Bruno", "09876543211", "São Paulo", "Rua B", "SP");
+        Cliente cliente2 = new Cliente(2, "Bruno", "09876543211", "São Paulo", "Rua B", "SP");
 
         clienteDAO.cadastrar(cliente1);
         clienteDAO.cadastrar(cliente2);

@@ -33,14 +33,14 @@ public class IntegracaoTest {
     @Test
     public void testCadastroERegistroDeVenda() {
         // Cadastrar um cliente
-        Cliente cliente = new Cliente("Maria", "12345678900", "São Paulo", "Rua A", "SP");
+        Cliente cliente = new Cliente(1, "Maria", "12345678900", "São Paulo", "Rua A", "SP");
         clienteService.cadastrarCliente(cliente);
 
         // Verificar se o cliente foi cadastrado corretamente
         assertNotNull(clienteService.consultarPorCpf("12345678900"), "Cliente não foi cadastrado corretamente.");
 
         // Cadastrar um produto
-        Produto produto = new Produto("Produto X", 150.0, "003");
+        Produto produto = new Produto(1, "Produto X", 150.0, "003"); // Adiciona um ID
         produtoService.cadastrarProduto(produto);
 
         // Verificar se o produto foi cadastrado corretamente
@@ -52,13 +52,16 @@ public class IntegracaoTest {
 
         // Criar a venda
         String numeroNotaFiscal = "NFE456"; // Exemplo de número de nota fiscal
-        Venda venda = new Venda(numeroNotaFiscal, cliente, produtos);
+        Venda venda = new Venda(numeroNotaFiscal, cliente);
+
+        // Adicionar produtos à venda
+        venda.getProdutos().putAll(produtos); // Adiciona os produtos à venda
 
         // Registrar a venda
         vendaService.registrarVenda(venda);
 
         // Verificar se a venda foi registrada
-        assertNotNull(vendaService.buscarVenda(numeroNotaFiscal).orElse(null), "Venda não foi registrada corretamente.");
+        assertNotNull(vendaService.buscarVenda(numeroNotaFiscal), "Venda não foi registrada corretamente.");
     }
 
     // Mock de IClienteDAO para os testes integrados

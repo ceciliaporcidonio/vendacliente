@@ -18,7 +18,7 @@ public class ProdutoServiceTest {
 
     @Test
     public void testCadastrarProduto() {
-        Produto produto = new Produto("Produto1", 100.0, "001");
+        Produto produto = new Produto(10,"Produto1", 100.0, "001");
         produtoService.cadastrarProduto(produto);
 
         Produto produtoBuscado = produtoService.buscarPorDescricao("Produto1");
@@ -29,10 +29,10 @@ public class ProdutoServiceTest {
 
     @Test
     public void testAlterarProduto() {
-        Produto produto = new Produto("Produto1", 100.0, "001");
+        Produto produto = new Produto(5,"Produto1", 100.0, "001");
         produtoService.cadastrarProduto(produto);
 
-        Produto produtoAlterado = new Produto("Produto1", 200.0, "001");
+        Produto produtoAlterado = new Produto(9,"Produto1", 200.0, "001");
         produtoService.alterarProduto(produtoAlterado);
 
         Produto produtoBuscado = produtoService.buscarPorDescricao("Produto1");
@@ -42,7 +42,7 @@ public class ProdutoServiceTest {
 
     @Test
     public void testExcluirProduto() {
-        Produto produto = new Produto("Produto1", 100.0, "001");
+        Produto produto = new Produto(8,"Produto1", 100.0, "001");
         produtoService.cadastrarProduto(produto);
 
         produtoService.excluirProduto("Produto1");
@@ -52,8 +52,8 @@ public class ProdutoServiceTest {
 
     @Test
     public void testListarTodosProdutos() {
-        Produto produto1 = new Produto("Produto1", 100.0, "001");
-        Produto produto2 = new Produto("Produto2", 200.0, "002");
+        Produto produto1 = new Produto(8,"Produto1", 100.0, "001");
+        Produto produto2 = new Produto(7,"Produto2", 200.0, "002");
 
         produtoService.cadastrarProduto(produto1);
         produtoService.cadastrarProduto(produto2);

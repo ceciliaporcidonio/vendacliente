@@ -18,13 +18,38 @@ public class ClienteServiceTest {
 
     @BeforeEach
     public void setUp() {
-        clienteDAOMock = new ClienteDAOMock(); // Mock implementado
+        clienteDAOMock = new ClienteDAOMock() {
+            @Override
+            public void cadastrarCliente(Cliente cliente) {
+
+            }
+
+            @Override
+            public Cliente consultarPorCpf(String cpf) {
+                return null;
+            }
+
+            @Override
+            public void alterarCliente(Cliente cliente) {
+
+            }
+
+            @Override
+            public void excluirCliente(String cpf) {
+
+            }
+
+            @Override
+            public List<Cliente> listarClientes() {
+                return List.of();
+            }
+        }; // Mock implementado
         clienteService = new ClienteService(clienteDAOMock);
     }
 
     @Test
     public void testCadastrarCliente() {
-        Cliente cliente = new Cliente("Ana", "12345678901", "Cidade", "Endereço", "Estado");
+        Cliente cliente = new Cliente(5,"Ana", "12345678901", "Cidade", "Endereço", "Estado");
         clienteService.cadastrarCliente(cliente);
 
         Cliente clienteConsultado = clienteService.consultarPorCpf("12345678901");
@@ -34,7 +59,7 @@ public class ClienteServiceTest {
 
     @Test
     public void testConsultarCliente() {
-        Cliente cliente = new Cliente("Ana", "12345678901", "Cidade", "Endereço", "Estado");
+        Cliente cliente = new Cliente(3, "Ana", "12345678901", "Cidade", "Endereço", "Estado");
         clienteService.cadastrarCliente(cliente);
 
         Cliente clienteConsultado = clienteService.consultarPorCpf("12345678901");
@@ -44,7 +69,7 @@ public class ClienteServiceTest {
 
     @Test
     public void testAlterarCliente() {
-        Cliente cliente = new Cliente("Ana", "12345678901", "Cidade", "Endereço", "Estado");
+        Cliente cliente = new Cliente(4,"Ana", "12345678901", "Cidade", "Endereço", "Estado");
         clienteService.cadastrarCliente(cliente);
 
         cliente.setNome("Ana Maria");
@@ -59,7 +84,7 @@ public class ClienteServiceTest {
 
     @Test
     public void testExcluirCliente() {
-        Cliente cliente = new Cliente("Ana", "12345678901", "Cidade", "Endereço", "Estado");
+        Cliente cliente = new Cliente(7,"Ana", "12345678901", "Cidade", "Endereço", "Estado");
         clienteService.cadastrarCliente(cliente);
 
         Cliente clienteAntesDaExclusao = clienteService.consultarPorCpf("12345678901");
@@ -72,7 +97,7 @@ public class ClienteServiceTest {
     }
 
     // Mock de IClienteDAO para os testes
-    private static class ClienteDAOMock implements IClienteDAO {
+    private static abstract class ClienteDAOMock implements IClienteDAO {
         private final Map<String, Cliente> clientes = new HashMap<>();
 
         @Override
@@ -99,5 +124,15 @@ public class ClienteServiceTest {
         public List<Cliente> listarTodos() {
             return new ArrayList<>(clientes.values());
         }
+
+        public abstract void cadastrarCliente(Cliente cliente);
+
+        public abstract Cliente consultarPorCpf(String cpf);
+
+        public abstract void alterarCliente(Cliente cliente);
+
+        public abstract void excluirCliente(String cpf);
+
+        public abstract List<Cliente> listarClientes();
     }
 }

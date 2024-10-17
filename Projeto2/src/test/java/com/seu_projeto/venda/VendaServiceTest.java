@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VendaServiceTest {
 
@@ -23,11 +24,11 @@ public class VendaServiceTest {
     @Test
     public void testRegistrarVenda() {
         // Criação do cliente
-        Cliente cliente = new Cliente("João", "12345678900", "São Paulo", "Rua A", "SP");
+        Cliente cliente = new Cliente(1,"João", "12345678900", "São Paulo", "Rua A", "SP");
 
         // Criação do produto
-        Produto produto1 = new Produto("Produto A", 50.0, "001");
-        Produto produto2 = new Produto("Produto B", 30.0, "002");
+        Produto produto1 = new Produto(1,"Produto A", 50.0, "001");
+        Produto produto2 = new Produto(2, "Produto B", 30.0, "002");
 
         // Mapa para armazenar produtos e suas quantidades
         Map<Produto, Integer> produtos = new HashMap<>();
@@ -36,12 +37,12 @@ public class VendaServiceTest {
 
         // Criação da venda
         String numeroNotaFiscal = "NFE123"; // Exemplo de número de nota fiscal
-        Venda venda = new Venda(numeroNotaFiscal, cliente, produtos);
+        Venda venda = new Venda(numeroNotaFiscal, cliente);
 
         // Registrar a venda
         vendaService.registrarVenda(venda);
 
-        // Verificar se a venda foi registrada
-        assertNotNull(vendaService.buscarVenda(numeroNotaFiscal).orElse(null));
+        // Verificar se a venda foi registrada corretamente
+        assertTrue(vendaService.buscarVenda(numeroNotaFiscal).isPresent());
     }
 }
