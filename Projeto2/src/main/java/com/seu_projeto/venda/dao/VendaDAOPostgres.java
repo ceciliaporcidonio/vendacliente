@@ -1,7 +1,6 @@
 package com.seu_projeto.venda.dao;
 
 import com.seu_projeto.venda.Venda;
-import com.seu_projeto.venda.ItemVenda;
 import com.seu_projeto.produto.Produto;
 import com.seu_projeto.cliente.Cliente;
 
@@ -17,150 +16,124 @@ public class VendaDAOPostgres implements IVendaDAO {
     private static final String USER = "admin";
     private static final String PASSWORD = "admin";
 
-    public Connection getConnection() throws SQLException {
-        try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (SQLException e) {
-            throw new SQLException("Erro ao conectar ao banco de dados: " + e.getMessage());
-        }
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
     @Override
     public void registrar(Venda venda) {
         String sqlVenda = "INSERT INTO venda (numero_nota, cliente_id, valor_total) VALUES (?, ?, ?)";
-        String sqlItemVenda = "INSERT INTO item_venda (venda_id, produto_id, quantidade) VALUES (?, ?, ?)";
+        String sqlItemVenda = "INSERT INTO item_venda (venda_id, produto_id, quantidade, valor_total) VALUES (?, ?, ?, ?)";
+        String sqlAtualizarEstoque = "UPDATE produto SET estoque = estoque - ? WHERE id = ?";
 
         try (Connection connection = getConnection();
              PreparedStatement stmtVenda = connection.prepareStatement(sqlVenda, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement stmtItemVenda = connection.prepareStatement(sqlItemVenda)) {
+             PreparedStatement stmtItemVenda = connection.prepareStatement(sqlItemVenda);
+             PreparedStatement stmtAtualizarEstoque = connection.prepareStatement(sqlAtualizarEstoque)) {
 
-            // Cadastrar a venda
-            stmtVenda.setInt(1, Integer.parseInt(venda.getNumeroNotaFiscal())); // Conversão para int
-            stmtVenda.setInt(2, venda.getCliente().getId()); // Supondo que Cliente tenha um campo ID
-            stmtVenda.setDouble(3, venda.calcularTotal());
+            stmtVenda.setInt(1, venda.getNumeroNotaFiscal());
+            stmtVenda.setInt(2, venda.getCliente().getId());
+            stmtVenda.setDouble(3, venda.getValorTotal());
             stmtVenda.executeUpdate();
 
-            // Obter o ID da venda gerado
             ResultSet rs = stmtVenda.getGeneratedKeys();
-            int vendaId = 0;
             if (rs.next()) {
-                vendaId = rs.getInt(1);
-            }
+                int vendaId = rs.getInt(1);
 
-            // Cadastrar os itens da venda
-            for (Map.Entry<Produto, Integer> entry : venda.getProdutos().entrySet()) {
-                Produto produto = entry.getKey();
-                int quantidade = entry.getValue();
+                for (Map.Entry<Produto, Integer> entry : venda.getProdutos().entrySet()) {
+                    Produto produto = entry.getKey();
+                    int quantidade = entry.getValue();
+                    double valorTotalItem = produto.getValorUnitario() * quantidade;
 
-                stmtItemVenda.setInt(1, vendaId);
-                stmtItemVenda.setInt(2, produto.getId()); // Supondo que Produto tenha um campo ID
-                stmtItemVenda.setInt(3, quantidade);
-                stmtItemVenda.executeUpdate();
+                    stmtItemVenda.setInt(1, vendaId);
+                    stmtItemVenda.setInt(2, produto.getId());
+                    stmtItemVenda.setInt(3, quantidade);
+                    stmtItemVenda.setDouble(4, valorTotalItem);
+                    stmtItemVenda.executeUpdate();
+
+                    stmtAtualizarEstoque.setInt(1, quantidade);
+                    stmtAtualizarEstoque.setInt(2, produto.getId());
+                    stmtAtualizarEstoque.executeUpdate();
+                }
             }
 
             System.out.println("Venda cadastrada com sucesso!");
 
         } catch (SQLException e) {
-            System.out.println("Erro ao cadastrar venda: " + e.getMessage());
+            throw new RuntimeException("Erro ao registrar venda: " + e.getMessage(), e);
         }
     }
 
     @Override
     public Optional<Venda> buscarPorNumero(String numeroNotaFiscal) {
         String sqlVenda = "SELECT * FROM venda WHERE numero_nota = ?";
-        String sqlItensVenda = "SELECT * FROM item_venda WHERE venda_id = ?";
+        String sqlItensVenda = "SELECT iv.*, p.descricao, p.valor_unitario FROM item_venda iv JOIN produto p ON iv.produto_id = p.id WHERE iv.venda_id = ?";
         Venda venda = null;
 
         try (Connection connection = getConnection();
              PreparedStatement stmtVenda = connection.prepareStatement(sqlVenda);
              PreparedStatement stmtItensVenda = connection.prepareStatement(sqlItensVenda)) {
 
-            // Converter número da nota fiscal para int
-            int numeroNotaFiscalInt = Integer.parseInt(numeroNotaFiscal);
-
-            // Consultar a venda
-            stmtVenda.setInt(1, numeroNotaFiscalInt);
+            stmtVenda.setString(1, numeroNotaFiscal);
             ResultSet rsVenda = stmtVenda.executeQuery();
 
             if (rsVenda.next()) {
-                int vendaId = rsVenda.getInt("numero_nota");
-                int clienteId = rsVenda.getInt("cliente_id");
-                Cliente cliente = new Cliente(); // Criar o objeto Cliente
-                cliente.setId(clienteId); // Supondo que Cliente tenha um método setId
+                venda = new Venda(rsVenda.getInt("numero_nota"), new Cliente(rsVenda.getInt("cliente_id")));
 
-                venda = new Venda(numeroNotaFiscal, cliente);
+                stmtItensVenda.setInt(1, rsVenda.getInt("id"));
+                ResultSet rsItensVenda = stmtItensVenda.executeQuery();
 
-                // Consultar os itens da venda
-                stmtItensVenda.setInt(1, vendaId);
-                ResultSet rsItens = stmtItensVenda.executeQuery();
+                while (rsItensVenda.next()) {
+                    // Usando o novo construtor de Produto que inclui o estoque como quantidade
+                    Produto produto = new Produto(
+                            rsItensVenda.getInt("produto_id"),
+                            rsItensVenda.getString("descricao"),
+                            rsItensVenda.getDouble("valor_unitario"),
+                            rsItensVenda.getInt("quantidade"));
 
-                while (rsItens.next()) {
-                    int produtoId = rsItens.getInt("produto_id");
-                    Produto produto = new Produto(); // Criar o objeto Produto
-                    produto.setId(produtoId); // Supondo que Produto tenha um método setId
-
-                    int quantidade = rsItens.getInt("quantidade");
-                    venda.adicionarProduto(produto, quantidade);
+                    venda.adicionarProduto(produto, rsItensVenda.getInt("quantidade"));
                 }
             }
 
         } catch (SQLException e) {
-            System.out.println("Erro ao consultar venda: " + e.getMessage());
+            throw new RuntimeException("Erro ao buscar venda: " + e.getMessage(), e);
         }
-
         return Optional.ofNullable(venda);
     }
 
     @Override
-    public void excluir(String numeroNotaFiscal) {
-        String sqlVenda = "DELETE FROM venda WHERE numero_nota = ?";
-        String sqlItensVenda = "DELETE FROM item_venda WHERE venda_id = (SELECT numero_nota FROM venda WHERE numero_nota = ?)";
-
-        try (Connection connection = getConnection();
-             PreparedStatement stmtItensVenda = connection.prepareStatement(sqlItensVenda);
-             PreparedStatement stmtVenda = connection.prepareStatement(sqlVenda)) {
-
-            // Converter número da nota fiscal para int
-            int numeroNotaFiscalInt = Integer.parseInt(numeroNotaFiscal);
-
-            // Deletar os itens da venda
-            stmtItensVenda.setInt(1, numeroNotaFiscalInt);
-            stmtItensVenda.executeUpdate();
-
-            // Deletar a venda
-            stmtVenda.setInt(1, numeroNotaFiscalInt);
-            stmtVenda.executeUpdate();
-
-            System.out.println("Venda excluída com sucesso!");
-
-        } catch (SQLException e) {
-            System.out.println("Erro ao excluir venda: " + e.getMessage());
-        }
-    }
-
-    @Override
     public List<Venda> listarTodas() {
-        String sqlVenda = "SELECT * FROM venda";
         List<Venda> vendas = new ArrayList<>();
+        String sql = "SELECT * FROM venda";
+        String sqlItensVenda = "SELECT iv.*, p.descricao, p.valor_unitario FROM item_venda iv JOIN produto p ON iv.produto_id = p.id WHERE iv.venda_id = ?";
 
         try (Connection connection = getConnection();
-             Statement stmtVenda = connection.createStatement();
-             ResultSet rsVenda = stmtVenda.executeQuery(sqlVenda)) {
+             PreparedStatement stmtVenda = connection.prepareStatement(sql);
+             PreparedStatement stmtItensVenda = connection.prepareStatement(sqlItensVenda);
+             ResultSet rs = stmtVenda.executeQuery()) {
 
-            while (rsVenda.next()) {
-                int numeroNota = rsVenda.getInt("numero_nota");
-                int clienteId = rsVenda.getInt("cliente_id");
-                Cliente cliente = new Cliente(); // Criar o objeto Cliente
-                cliente.setId(clienteId); // Supondo que Cliente tenha um método setId
+            while (rs.next()) {
+                Venda venda = new Venda(rs.getInt("numero_nota"), new Cliente(rs.getInt("cliente_id")));
 
-                Venda venda = new Venda(String.valueOf(numeroNota), cliente);
+                stmtItensVenda.setInt(1, rs.getInt("id"));
+                ResultSet rsItensVenda = stmtItensVenda.executeQuery();
+
+                while (rsItensVenda.next()) {
+                    // Usando o novo construtor de Produto que inclui o estoque como quantidade
+                    Produto produto = new Produto(
+                            rsItensVenda.getInt("produto_id"),
+                            rsItensVenda.getString("descricao"),
+                            rsItensVenda.getDouble("valor_unitario"),
+                            rsItensVenda.getInt("quantidade"));
+
+                    venda.adicionarProduto(produto, rsItensVenda.getInt("quantidade"));
+                }
                 vendas.add(venda);
             }
 
         } catch (SQLException e) {
-            System.out.println("Erro ao listar vendas: " + e.getMessage());
+            throw new RuntimeException("Erro ao listar vendas: " + e.getMessage(), e);
         }
-
         return vendas;
     }
 }

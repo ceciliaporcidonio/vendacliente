@@ -40,7 +40,7 @@ public class VendaServiceTest {
         Venda venda = new Venda(numeroNotaFiscal, cliente);
 
         // Registrar a venda
-        vendaService.registrarVenda(venda);
+        vendaService.cadastrarVenda(venda);
 
         // Verificar se a venda foi registrada corretamente
         assertTrue(vendaService.buscarVenda(numeroNotaFiscal).isPresent());

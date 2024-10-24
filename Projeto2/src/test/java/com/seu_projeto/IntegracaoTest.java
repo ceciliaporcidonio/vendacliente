@@ -3,94 +3,87 @@ import com.seu_projeto.cliente.ClienteService;
 import com.seu_projeto.cliente.dao.IClienteDAO;
 import com.seu_projeto.produto.Produto;
 import com.seu_projeto.produto.ProdutoService;
-import com.seu_projeto.produto.dao.ProdutoDAOMemoria;
+import com.seu_projeto.produto.dao.IProdutoDAO;
 import com.seu_projeto.venda.Venda;
 import com.seu_projeto.venda.VendaService;
-import com.seu_projeto.venda.dao.VendaDAOMemoria;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.seu_projeto.venda.dao.IVendaDAO;
+
+import org.junit.jupiter.api.*;
+
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class IntegracaoTest {
 
-    private ClienteService clienteService;
-    private ProdutoService produtoService;
-    private VendaService vendaService;
+    private static IClienteDAO clienteDAO;
+    private static IProdutoDAO produtoDAO;
+    private static IVendaDAO vendaDAO;
+    private static ClienteService clienteService;
+    private static ProdutoService produtoService;
+    private static VendaService vendaService;
+
+    @BeforeAll
+    public static void setup() {
+        clienteDAO = mock(IClienteDAO.class);
+        produtoDAO = mock(IProdutoDAO.class);
+        vendaDAO = mock(IVendaDAO.class);
+
+        clienteService = new ClienteService(clienteDAO);
+        produtoService = new ProdutoService(produtoDAO);
+        vendaService = new VendaService(vendaDAO);
+    }
 
     @BeforeEach
-    public void setUp() {
-        clienteService = new ClienteService(new ClienteDAOMock());
-        produtoService = new ProdutoService(new ProdutoDAOMemoria());
-        vendaService = new VendaService(new VendaDAOMemoria());
+    public void init() {
+        // Se necessário, inicializar objetos comuns
+    }
+
+    @AfterEach
+    public void cleanup() {
+        // Limpar dados ou estados se necessário
     }
 
     @Test
-    public void testCadastroERegistroDeVenda() {
-        // Cadastrar um cliente
-        Cliente cliente = new Cliente(1, "Maria", "12345678900", "São Paulo", "Rua A", "SP");
+    public void testCadastrarCliente() {
+        Cliente cliente = new Cliente("Ana", "123.456.789-00", "99999-9999", "São Paulo", "Rua A", "SP");
         clienteService.cadastrarCliente(cliente);
-
-        // Verificar se o cliente foi cadastrado corretamente
-        assertNotNull(clienteService.consultarPorCpf("12345678900"), "Cliente não foi cadastrado corretamente.");
-
-        // Cadastrar um produto
-        Produto produto = new Produto(1, "Produto X", 150.0, "003"); // Adiciona um ID
-        produtoService.cadastrarProduto(produto);
-
-        // Verificar se o produto foi cadastrado corretamente
-        assertNotNull(produtoService.buscarPorDescricao("Produto X"), "Produto não foi cadastrado corretamente.");
-
-        // Criar um mapa de produtos e suas quantidades
-        Map<Produto, Integer> produtos = new HashMap<>();
-        produtos.put(produto, 3); // 3 unidades do Produto X
-
-        // Criar a venda
-        String numeroNotaFiscal = "NFE456"; // Exemplo de número de nota fiscal
-        Venda venda = new Venda(numeroNotaFiscal, cliente);
-
-        // Adicionar produtos à venda
-        venda.getProdutos().putAll(produtos); // Adiciona os produtos à venda
-
-        // Registrar a venda
-        vendaService.registrarVenda(venda);
-
-        // Verificar se a venda foi registrada
-        assertNotNull(vendaService.buscarVenda(numeroNotaFiscal), "Venda não foi registrada corretamente.");
+        verify(clienteDAO, times(1)).cadastrar(cliente);
     }
 
-    // Mock de IClienteDAO para os testes integrados
-    private static class ClienteDAOMock implements IClienteDAO {
-        private final Map<String, Cliente> clientes = new HashMap<>();
+    @Test
+    public void testConsultarCliente() {
+        String cpf = "123.456.789-00";
+        Cliente cliente = new Cliente("Ana", cpf, "99999-9999", "São Paulo", "Rua A", "SP");
+        when(clienteDAO.consultarPorCpf(cpf)).thenReturn(cliente);
 
-        @Override
-        public void cadastrar(Cliente cliente) {
-            clientes.put(cliente.getCpf(), cliente);
-        }
+        Cliente clienteConsultado = clienteService.consultarPorCpf(cpf);
+        Assertions.assertEquals(cliente, clienteConsultado);
+    }
 
-        @Override
-        public Cliente consultar(String cpf) {
-            return clientes.get(cpf);
-        }
+    @Test
+    public void testCadastrarProduto() {
+        Produto produto = new Produto("Produto A", 10.0, "001", 50);
+        produtoService.cadastrarProduto(produto);
+        verify(produtoDAO, times(1)).cadastrar(produto);
+    }
 
-        @Override
-        public void alterar(Cliente cliente) {
-            clientes.put(cliente.getCpf(), cliente);
-        }
+    @Test
+    public void testConsultarProduto() {
+        String descricao = "Produto A";
+        Produto produto = new Produto(descricao, 10.0, "001", 50);
+        when(produtoDAO.buscarPorDescricao(descricao)).thenReturn(produto);
 
-        @Override
-        public void excluir(String cpf) {
-            clientes.remove(cpf);
-        }
+        Produto produtoConsultado = produtoService.buscarPorDescricao(descricao);
+        Assertions.assertEquals(produto, produtoConsultado);
+    }
 
-        @Override
-        public List<Cliente> listarTodos() {
-            return new ArrayList<>(clientes.values());
-        }
+    @Test
+    public void testCadastrarVenda() {
+        // Testando a criação de uma venda
+        Venda venda = new Venda(new Cliente("Ana", "123.456.789-00", "99999-9999", "São Paulo", "Rua A", "SP"));
+        vendaService.cadastrarVenda(venda);
+        verify(vendaDAO, times(1)).cadastrar(venda);
     }
 }

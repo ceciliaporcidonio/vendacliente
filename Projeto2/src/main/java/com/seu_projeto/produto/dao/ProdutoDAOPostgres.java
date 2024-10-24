@@ -12,17 +12,13 @@ public class ProdutoDAOPostgres implements IProdutoDAO {
     private static final String USER = "admin";
     private static final String PASSWORD = "admin";
 
-    public Connection getConnection() throws SQLException {
-        try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (SQLException e) {
-            throw new SQLException("Erro ao conectar ao banco de dados: " + e.getMessage());
-        }
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
     @Override
     public void cadastrar(Produto produto) {
-        String sql = "INSERT INTO produto (descricao, valor_unitario, codigo_produto) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO produto (descricao, valor_unitario, codigo_produto, estoque) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -30,16 +26,17 @@ public class ProdutoDAOPostgres implements IProdutoDAO {
             stmt.setString(1, produto.getDescricao());
             stmt.setDouble(2, produto.getValorUnitario());
             stmt.setString(3, produto.getCodigoProduto());
+            stmt.setInt(4, produto.getEstoque());
             stmt.executeUpdate();
             System.out.println("Produto cadastrado com sucesso!");
 
         } catch (SQLException e) {
-            System.out.println("Erro ao cadastrar produto: " + e.getMessage());
+            throw new RuntimeException("Erro ao cadastrar produto: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public Produto buscarPorDescricao(String descricao) { // Método renomeado
+    public Produto buscarPorDescricao(String descricao) {
         String sql = "SELECT * FROM produto WHERE descricao = ?";
         Produto produto = null;
 
@@ -54,12 +51,13 @@ public class ProdutoDAOPostgres implements IProdutoDAO {
                         rs.getInt("id"),
                         rs.getString("descricao"),
                         rs.getDouble("valor_unitario"),
-                        rs.getString("codigo_produto")
+                        rs.getString("codigo_produto"),
+                        rs.getInt("estoque")
                 );
             }
 
         } catch (SQLException e) {
-            System.out.println("Erro ao buscar produto por descrição: " + e.getMessage());
+            throw new RuntimeException("Erro ao buscar produto: " + e.getMessage(), e);
         }
 
         return produto;
@@ -67,24 +65,25 @@ public class ProdutoDAOPostgres implements IProdutoDAO {
 
     @Override
     public void alterar(Produto produto) {
-        String sql = "UPDATE produto SET descricao = ?, valor_unitario = ? WHERE codigo_produto = ?";
+        String sql = "UPDATE produto SET descricao = ?, valor_unitario = ?, estoque = ? WHERE codigo_produto = ?";
 
         try (Connection connection = getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             stmt.setString(1, produto.getDescricao());
             stmt.setDouble(2, produto.getValorUnitario());
-            stmt.setString(3, produto.getCodigoProduto());
+            stmt.setInt(3, produto.getEstoque());
+            stmt.setString(4, produto.getCodigoProduto());
             stmt.executeUpdate();
             System.out.println("Produto alterado com sucesso!");
 
         } catch (SQLException e) {
-            System.out.println("Erro ao alterar produto: " + e.getMessage());
+            throw new RuntimeException("Erro ao alterar produto: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public void excluir(String codigoProduto) { // Parâmetro alterado
+    public void excluir(String codigoProduto) {
         String sql = "DELETE FROM produto WHERE codigo_produto = ?";
 
         try (Connection connection = getConnection();
@@ -95,14 +94,14 @@ public class ProdutoDAOPostgres implements IProdutoDAO {
             System.out.println("Produto excluído com sucesso!");
 
         } catch (SQLException e) {
-            System.out.println("Erro ao excluir produto: " + e.getMessage());
+            throw new RuntimeException("Erro ao excluir produto: " + e.getMessage(), e);
         }
     }
 
     @Override
     public List<Produto> listarTodos() {
-        String sql = "SELECT * FROM produto";
         List<Produto> produtos = new ArrayList<>();
+        String sql = "SELECT * FROM produto";
 
         try (Connection connection = getConnection();
              Statement stmt = connection.createStatement();
@@ -113,13 +112,14 @@ public class ProdutoDAOPostgres implements IProdutoDAO {
                         rs.getInt("id"),
                         rs.getString("descricao"),
                         rs.getDouble("valor_unitario"),
-                        rs.getString("codigo_produto")
+                        rs.getString("codigo_produto"),
+                        rs.getInt("estoque")
                 );
                 produtos.add(produto);
             }
 
         } catch (SQLException e) {
-            System.out.println("Erro ao listar produtos: " + e.getMessage());
+            throw new RuntimeException("Erro ao listar produtos: " + e.getMessage(), e);
         }
 
         return produtos;

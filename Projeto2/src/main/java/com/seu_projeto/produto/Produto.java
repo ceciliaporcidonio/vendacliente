@@ -1,63 +1,82 @@
 package com.seu_projeto.produto;
 
 public class Produto {
-    private int id; // ID do produto, geralmente gerado automaticamente no banco de dados
-    private String descricao; // Descrição do produto
-    private double valorUnitario; // Valor unitário do produto
-    private String codigoProduto; // Código do produto (campo adicionado na tabela)
+    private Integer id; // ID pode ser nulo
+    private String descricao;
+    private double valorUnitario;
+    private String codigoProduto;
+    private int estoque; // Pode representar a quantidade
 
     // Construtor padrão
     public Produto() {
     }
 
-    // Construtor com parâmetros
-    public Produto(int id, String descricao, double valorUnitario, String codigoProduto) {
-        this.id = id; // Inicializa o ID, pode ser opcional caso o ID seja gerado pelo banco
+    // Construtor que inclui todos os parâmetros
+    public Produto(Integer id, String descricao, double valorUnitario, String codigoProduto, int estoque) {
+        this.id = id;
         this.descricao = descricao;
         this.valorUnitario = valorUnitario;
         this.codigoProduto = codigoProduto;
+        this.estoque = estoque;
+    }
+
+    // Construtor simplificado para operações de venda, onde estoque é a quantidade do item vendido
+    public Produto(Integer id, String descricao, double valorUnitario, int quantidade) {
+        this.id = id;
+        this.descricao = descricao;
+        this.valorUnitario = valorUnitario;
+        this.estoque = quantidade; // Estoque pode ser interpretado como quantidade nesse caso
     }
 
     // Getters e Setters
-    public int getId() {
-        return id; // Retorna o ID do produto
+    public Integer getId() {
+        return id;
     }
 
-    public void setId(int id) {
-        this.id = id; // Define o ID do produto
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getDescricao() {
-        return descricao; // Retorna a descrição do produto
+        return descricao;
     }
 
     public void setDescricao(String descricao) {
-        this.descricao = descricao; // Define a descrição do produto
+        this.descricao = descricao;
     }
 
     public double getValorUnitario() {
-        return valorUnitario; // Retorna o valor unitário do produto
+        return valorUnitario;
     }
 
     public void setValorUnitario(double valorUnitario) {
-        this.valorUnitario = valorUnitario; // Define o valor unitário do produto
+        this.valorUnitario = valorUnitario;
     }
 
     public String getCodigoProduto() {
-        return codigoProduto; // Retorna o código do produto
+        return codigoProduto;
     }
 
     public void setCodigoProduto(String codigoProduto) {
-        this.codigoProduto = codigoProduto; // Define o código do produto
+        this.codigoProduto = codigoProduto;
+    }
+
+    public int getEstoque() {
+        return estoque;
+    }
+
+    public void setEstoque(int estoque) {
+        this.estoque = estoque;
     }
 
     @Override
     public String toString() {
         return "Produto{" +
-                "id=" + id + // Representa o ID do produto
-                ", descricao='" + descricao + '\'' + // Representa a descrição do produto
-                ", valorUnitario=" + valorUnitario + // Representa o valor unitário do produto
-                ", codigoProduto='" + codigoProduto + '\'' + // Representa o código do produto
-                '}'; // Finaliza a representação em string
+                "id=" + id +
+                ", descricao='" + descricao + '\'' +
+                ", valorUnitario=" + valorUnitario +
+                ", codigoProduto='" + codigoProduto + '\'' +
+                ", estoque=" + estoque +
+                '}';
     }
 }

@@ -1,30 +1,40 @@
 package com.seu_projeto.venda;
 
 import com.seu_projeto.venda.dao.IVendaDAO;
+import com.seu_projeto.produto.Produto;
+import com.seu_projeto.cliente.Cliente;
+
+import java.util.List;
 import java.util.Optional;
 
 public class VendaService {
-    private IVendaDAO vendaDAO;
+
+    private final IVendaDAO vendaDAO;
 
     public VendaService(IVendaDAO vendaDAO) {
         this.vendaDAO = vendaDAO;
     }
 
-    public Venda registrarVenda(Venda venda) {
-        if (venda == null) {
-            throw new IllegalArgumentException("A venda não pode ser nula.");
+    public void cadastrarVenda(Cliente cliente, Produto produto, int quantidade) {
+        if (produto.getEstoque() >= quantidade) {
+            Venda venda = new Venda(cliente);
+            venda.adicionarProduto(produto, quantidade);
+
+            vendaDAO.registrar(venda);
+            produto.setEstoque(produto.getEstoque() - quantidade);
+
+            System.out.println("Venda realizada com sucesso!");
+            venda.gerarNotaFiscal();
+        } else {
+            System.out.println("Estoque insuficiente para o produto " + produto.getDescricao());
         }
-        vendaDAO.registrar(venda);
-        return venda;
     }
 
-    // Alteração para retornar Optional
-    public Optional<Venda> buscarVenda(String numeroNotaFiscal) {
-        if (numeroNotaFiscal == null || numeroNotaFiscal.isEmpty()) {
-            throw new IllegalArgumentException("O número da nota fiscal não pode ser nulo ou vazio.");
-        }
-
-        // Usando Optional para buscar a venda
+    public Optional<Venda> buscarPorNumero(String numeroNotaFiscal) {
         return vendaDAO.buscarPorNumero(numeroNotaFiscal);
+    }
+
+    public List<Venda> listarTodasVendas() {
+        return vendaDAO.listarTodas();
     }
 }

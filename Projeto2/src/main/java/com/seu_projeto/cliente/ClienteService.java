@@ -3,6 +3,7 @@ package com.seu_projeto.cliente;
 import com.seu_projeto.cliente.dao.IClienteDAO;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ClienteService {
     private IClienteDAO clienteDAO;
@@ -15,8 +16,9 @@ public class ClienteService {
         clienteDAO.cadastrar(cliente);
     }
 
-    public Cliente consultarPorCpf(String cpf) {
-        return clienteDAO.consultar(cpf); // Usando 'consultar'
+    // Modificado para retornar Optional<Cliente>
+    public Optional<Cliente> consultarPorCpf(String cpf) {
+        return Optional.ofNullable(clienteDAO.consultar(cpf));  // Mantém Optional para lidar com ausência do cliente
     }
 
     public void alterarCliente(Cliente cliente) {

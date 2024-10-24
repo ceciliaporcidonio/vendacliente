@@ -16,19 +16,17 @@ public class ClienteDAOMemoria implements IClienteDAO {
         if (cliente == null) {
             throw new IllegalArgumentException("Cliente não pode ser nulo");
         }
-        clienteMap.put(cliente.getCpf(), cliente); // Adiciona ou atualiza o cliente no mapa
+        clienteMap.put(cliente.getCpf(), cliente);
     }
 
     @Override
     public Cliente consultar(String cpf) {
-        if (cpf == null || cpf.isEmpty()) {
-            throw new IllegalArgumentException("CPF não pode ser nulo ou vazio");
-        }
+        validarCpf(cpf);
         Cliente cliente = clienteMap.get(cpf);
         if (cliente == null) {
             throw new RuntimeException("Cliente não encontrado para o CPF: " + cpf);
         }
-        return cliente; // Retorna o cliente com o CPF fornecido
+        return cliente;
     }
 
     @Override
@@ -36,25 +34,34 @@ public class ClienteDAOMemoria implements IClienteDAO {
         if (cliente == null) {
             throw new IllegalArgumentException("Cliente não pode ser nulo");
         }
+        validarCpf(cliente.getCpf());
+
         if (!clienteMap.containsKey(cliente.getCpf())) {
             throw new RuntimeException("Cliente não encontrado para o CPF: " + cliente.getCpf());
         }
-        clienteMap.put(cliente.getCpf(), cliente); // Substitui o cliente existente no mapa
+
+        // Atualiza o cliente no mapa
+        clienteMap.put(cliente.getCpf(), cliente);
     }
 
     @Override
     public void excluir(String cpf) {
-        if (cpf == null || cpf.isEmpty()) {
-            throw new IllegalArgumentException("CPF não pode ser nulo ou vazio");
-        }
+        validarCpf(cpf);
         if (!clienteMap.containsKey(cpf)) {
             throw new RuntimeException("Cliente não encontrado para o CPF: " + cpf);
         }
-        clienteMap.remove(cpf); // Remove o cliente pelo CPF
+        clienteMap.remove(cpf);
     }
 
     @Override
     public List<Cliente> listarTodos() {
-        return clienteMap.values().stream().collect(Collectors.toList()); // Retorna uma lista de todos os clientes
+        return clienteMap.values().stream().collect(Collectors.toList());
+    }
+
+    // Método auxiliar para validar CPF
+    private void validarCpf(String cpf) {
+        if (cpf == null || cpf.isEmpty()) {
+            throw new IllegalArgumentException("CPF não pode ser nulo ou vazio");
+        }
     }
 }

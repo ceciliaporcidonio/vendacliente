@@ -12,17 +12,13 @@ public class ClienteDAOPostgres implements IClienteDAO {
     private static final String USER = "admin";
     private static final String PASSWORD = "admin";
 
-    public Connection getConnection() throws SQLException {
-        try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (SQLException e) {
-            throw new SQLException("Erro ao conectar ao banco de dados: " + e.getMessage());
-        }
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
     @Override
     public void cadastrar(Cliente cliente) {
-        String sql = "INSERT INTO cliente (cpf, nome, cidade, endereco, estado) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO cliente (cpf, nome, cidade, endereco, estado, telefone) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -32,11 +28,11 @@ public class ClienteDAOPostgres implements IClienteDAO {
             stmt.setString(3, cliente.getCidade());
             stmt.setString(4, cliente.getEndereco());
             stmt.setString(5, cliente.getEstado());
+            stmt.setString(6, cliente.getTelefone());
             stmt.executeUpdate();
-            System.out.println("Cliente cadastrado com sucesso!");
 
         } catch (SQLException e) {
-            System.out.println("Erro ao cadastrar cliente: " + e.getMessage());
+            throw new RuntimeException("Erro ao cadastrar cliente", e);
         }
     }
 
@@ -58,12 +54,13 @@ public class ClienteDAOPostgres implements IClienteDAO {
                         rs.getString("cpf"),
                         rs.getString("cidade"),
                         rs.getString("endereco"),
-                        rs.getString("estado")
+                        rs.getString("estado"),
+                        rs.getString("telefone")
                 );
             }
 
         } catch (SQLException e) {
-            System.out.println("Erro ao consultar cliente: " + e.getMessage());
+            throw new RuntimeException("Erro ao consultar cliente", e);
         }
 
         return cliente;
@@ -71,21 +68,25 @@ public class ClienteDAOPostgres implements IClienteDAO {
 
     @Override
     public void alterar(Cliente cliente) {
-        String sql = "UPDATE cliente SET nome = ?, cidade = ?, endereco = ?, estado = ? WHERE cpf = ?";
+        String sql = "UPDATE cliente SET nome = ?, cidade = ?, endereco = ?, estado = ?, telefone = ? WHERE cpf = ?";
 
         try (Connection connection = getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            if (consultar(cliente.getCpf()) == null) {
+                throw new RuntimeException("Cliente não encontrado para o CPF: " + cliente.getCpf());
+            }
 
             stmt.setString(1, cliente.getNome());
             stmt.setString(2, cliente.getCidade());
             stmt.setString(3, cliente.getEndereco());
             stmt.setString(4, cliente.getEstado());
-            stmt.setString(5, cliente.getCpf());
+            stmt.setString(5, cliente.getTelefone());
+            stmt.setString(6, cliente.getCpf());
             stmt.executeUpdate();
-            System.out.println("Cliente alterado com sucesso!");
 
         } catch (SQLException e) {
-            System.out.println("Erro ao alterar cliente: " + e.getMessage());
+            throw new RuntimeException("Erro ao alterar cliente", e);
         }
     }
 
@@ -98,21 +99,20 @@ public class ClienteDAOPostgres implements IClienteDAO {
 
             stmt.setString(1, cpf);
             stmt.executeUpdate();
-            System.out.println("Cliente excluído com sucesso!");
 
         } catch (SQLException e) {
-            System.out.println("Erro ao excluir cliente: " + e.getMessage());
+            throw new RuntimeException("Erro ao excluir cliente", e);
         }
     }
 
     @Override
     public List<Cliente> listarTodos() {
-        String sql = "SELECT * FROM cliente";
         List<Cliente> clientes = new ArrayList<>();
+        String sql = "SELECT * FROM cliente";
 
         try (Connection connection = getConnection();
-             Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 Cliente cliente = new Cliente(
@@ -121,13 +121,14 @@ public class ClienteDAOPostgres implements IClienteDAO {
                         rs.getString("cpf"),
                         rs.getString("cidade"),
                         rs.getString("endereco"),
-                        rs.getString("estado")
+                        rs.getString("estado"),
+                        rs.getString("telefone")
                 );
                 clientes.add(cliente);
             }
 
         } catch (SQLException e) {
-            System.out.println("Erro ao listar clientes: " + e.getMessage());
+            throw new RuntimeException("Erro ao listar clientes", e);
         }
 
         return clientes;

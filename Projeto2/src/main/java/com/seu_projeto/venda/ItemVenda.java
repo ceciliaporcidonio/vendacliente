@@ -10,7 +10,7 @@ public class ItemVenda {
     public ItemVenda(Produto produto, int quantidade) {
         this.produto = produto;
         this.quantidade = quantidade;
-        this.valorTotal = calcularValorTotal();
+        this.valorTotal = calcularValorTotal(); // Calcula o valor total no momento da criação do item
     }
 
     private double calcularValorTotal() {

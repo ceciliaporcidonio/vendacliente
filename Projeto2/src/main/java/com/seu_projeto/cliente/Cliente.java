@@ -3,37 +3,38 @@ package com.seu_projeto.cliente;
 import java.util.Objects;
 
 public class Cliente {
-    private int id; // Adicionando o atributo id
+    private Integer id; // Alterado para Integer
     private String nome;
     private String cpf;
     private String cidade;
     private String endereco;
     private String estado;
+    private String telefone;
 
     // Construtor completo
-    public Cliente(Integer id, String nome, String cpf, String cidade, String endereco, String estado) {
-        this.id = id; // Inicializando o id
+    public Cliente(Integer id, String nome, String cpf, String cidade, String endereco, String estado, String telefone) {
+        this.id = id;
         this.nome = nome;
         this.cpf = cpf;
         this.cidade = cidade;
         this.endereco = endereco;
         this.estado = estado;
+        this.telefone = telefone;
     }
 
-    // Construtor vazio
-    public Cliente() {}
-
-    // Getter para id
-    public int getId() {
-        return id;
-    }
-
-    // Setter para id
-    public void setId(int id) {
+    // Construtor com apenas o ID
+    public Cliente(Integer id) {
         this.id = id;
     }
 
-    // Restante dos getters e setters...
+    // Getters e Setters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getNome() {
         return nome;
@@ -43,6 +44,7 @@ public class Cliente {
         this.nome = nome;
     }
 
+   
     public String getCpf() {
         return cpf;
     }
@@ -75,15 +77,24 @@ public class Cliente {
         this.estado = estado;
     }
 
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
     @Override
     public String toString() {
         return "Cliente{" +
-                "id=" + id + // Adicionando id no toString
+                "id=" + id +
                 ", nome='" + nome + '\'' +
                 ", cpf='" + cpf + '\'' +
                 ", cidade='" + cidade + '\'' +
                 ", endereco='" + endereco + '\'' +
                 ", estado='" + estado + '\'' +
+                ", telefone='" + telefone + '\'' +
                 '}';
     }
 
@@ -92,7 +103,7 @@ public class Cliente {
         if (this == o) return true;
         if (!(o instanceof Cliente)) return false;
         Cliente cliente = (Cliente) o;
-        return Objects.equals(cpf, cliente.cpf); // Considerando CPF como identificador único
+        return Objects.equals(cpf, cliente.cpf); // Considerando CPF como único
     }
 
     @Override

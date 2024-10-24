@@ -7,17 +7,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Venda {
-    private String numeroNotaFiscal;
+
+    private int numeroNotaFiscal;
     private Cliente cliente;
     private Map<Produto, Integer> produtos;
+    private double valorTotal;
 
-    public Venda(String numeroNotaFiscal, Cliente cliente) {
+    // Construtor que aceita numeroNotaFiscal e Cliente
+    public Venda(int numeroNotaFiscal, Cliente cliente) {
         this.numeroNotaFiscal = numeroNotaFiscal;
         this.cliente = cliente;
-        this.produtos = new HashMap<>(); // Inicializar produtos
+        this.produtos = new HashMap<>();
     }
 
-    public String getNumeroNotaFiscal() {
+    // Construtor que aceita apenas Cliente (usado ao cadastrar)
+    public Venda(Cliente cliente) {
+        this.cliente = cliente;
+        this.produtos = new HashMap<>();
+    }
+
+    public int getNumeroNotaFiscal() {
         return numeroNotaFiscal;
     }
 
@@ -25,33 +34,34 @@ public class Venda {
         return cliente;
     }
 
+    public double getValorTotal() {
+        return valorTotal;
+    }
+
     public Map<Produto, Integer> getProdutos() {
         return produtos;
     }
 
     public void adicionarProduto(Produto produto, int quantidade) {
-        // Se o produto já existir, incrementa a quantidade
-        produtos.merge(produto, quantidade, Integer::sum);
+        produtos.put(produto, quantidade);
+        calcularValorTotal();
     }
 
-    public double calcularTotal() {
-        return produtos.entrySet().stream()
+    private void calcularValorTotal() {
+        valorTotal = produtos.entrySet().stream()
                 .mapToDouble(entry -> entry.getKey().getValorUnitario() * entry.getValue())
                 .sum();
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Nota Fiscal: ").append(numeroNotaFiscal).append("\n");
-        sb.append("Cliente: ").append(cliente.getNome()).append("\n");
-        sb.append("Produtos:\n");
-        produtos.forEach((produto, quantidade) ->
-                sb.append(produto.getDescricao()).append(" - Quantidade: ")
-                        .append(quantidade).append(" - Total: ")
-                        .append(produto.getValorUnitario() * quantidade).append("\n")
-        );
-        sb.append("Total da Venda: ").append(calcularTotal()).append("\n");
-        return sb.toString();
+    public void gerarNotaFiscal() {
+        System.out.println("Nota Fiscal: " + numeroNotaFiscal);
+        System.out.println("Cliente: " + cliente.getNome());
+        System.out.println("Produtos:");
+        produtos.forEach((produto, quantidade) -> {
+            double total = produto.getValorUnitario() * quantidade;
+            System.out.printf("Produto: %s | Quantidade: %d | Preço: %.2f | Total: %.2f%n",
+                    produto.getDescricao(), quantidade, produto.getValorUnitario(), total);
+        });
+        System.out.println("Valor Total: " + valorTotal);
     }
 }
